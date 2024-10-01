@@ -214,12 +214,20 @@ def backtest_model(hist: pd.DataFrame, prediction_func: Callable, window: int = 
     predictions = []
     
     for i in range(len(hist) - window):
-        train_data = hist.iloc[:i+window]
-        pred = prediction_func(train_data, days_ahead=1, **kwargs).iloc[0]
-        predictions.append(pred)
-    
+        train_data = hist.iloc[:i + window]
+        pred = prediction_func(train_data, days_ahead=1, **kwargs)
+        if not pred.empty:  # Check if predictions are not empty
+            predictions.append(pred.iloc[0])
+        else:
+            predictions.append(np.nan)  # Append NaN if prediction fails
+
     predictions = pd.Series(predictions, index=actual_prices.index[window:])
-    rmse = sqrt(mean_squared_error(actual_prices[window:], predictions))
+    predictions = predictions.dropna()  # Drop NaN values for RMSE calculation
+
+    if predictions.empty:
+        return np.nan  # Return NaN if there are no valid predictions
+    
+    rmse = sqrt(mean_squared_error(actual_prices[window:][predictions.index], predictions))
     return rmse
 
 # ---------------------------
@@ -247,9 +255,7 @@ def main():
 
     # Time Range Selection
     time_ranges = {
-        "1 Hour": "1h",
-        "1 Day": "1d",
-        "5 Days": "5d",
+           "5 Days": "5d",
         "1 Month": "1mo",
         "6 Months": "6mo",
         "1 Year": "1y",

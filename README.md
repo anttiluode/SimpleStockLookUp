@@ -31,7 +31,6 @@ streamlit run main.py
 Usage
 Select a stock ticker from the S&P 500 list or enter your own.
 Choose the desired time range for historical data.
-Notice, if you choose the hour range for some reason the stock data does not show up. 
 Select a prediction model and customize parameters as needed.
 Fetch data to visualize stock performance and make future price estimates.
 License

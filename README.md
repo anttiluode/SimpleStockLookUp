@@ -40,3 +40,5 @@ This project is licensed under the MIT License. See the LICENSE file for details
 Acknowledgments
 This application utilizes data from Yahoo Finance.
 Built with Streamlit, yfinance, pandas, numpy, and Plotly.
+
+For entertainment purposes only. 

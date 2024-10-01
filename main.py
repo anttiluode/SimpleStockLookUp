@@ -210,24 +210,27 @@ def predict_mean_reversion(hist: pd.DataFrame, days_ahead: int = 30) -> pd.Serie
 
 def backtest_model(hist: pd.DataFrame, prediction_func: Callable, window: int = 30, **kwargs) -> float:
     """Backtest the prediction model and return RMSE."""
+    if len(hist) < window:  # Check if there are enough data points
+        st.warning(f"Not enough data points to perform backtesting. Required: {window}, Available: {len(hist)}")
+        return float('nan')  # Return NaN if insufficient data
+    
     actual_prices = hist['Close']
     predictions = []
     
     for i in range(len(hist) - window):
         train_data = hist.iloc[:i + window]
         pred = prediction_func(train_data, days_ahead=1, **kwargs)
-        if not pred.empty:  # Check if predictions are not empty
-            predictions.append(pred.iloc[0])
-        else:
-            predictions.append(np.nan)  # Append NaN if prediction fails
-
-    predictions = pd.Series(predictions, index=actual_prices.index[window:])
-    predictions = predictions.dropna()  # Drop NaN values for RMSE calculation
-
-    if predictions.empty:
-        return np.nan  # Return NaN if there are no valid predictions
+        
+        if not pred.empty:  # Ensure prediction is not empty
+            predictions.append(pred.iloc[0])  # Append first prediction only
     
-    rmse = sqrt(mean_squared_error(actual_prices[window:][predictions.index], predictions))
+    # Ensure predictions have been made
+    if not predictions:
+        st.warning("No predictions were generated during backtesting.")
+        return float('nan')
+    
+    predictions = pd.Series(predictions, index=actual_prices.index[window:])
+    rmse = sqrt(mean_squared_error(actual_prices[window:], predictions))
     return rmse
 
 # ---------------------------
